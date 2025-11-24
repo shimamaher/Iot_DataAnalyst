@@ -6,22 +6,23 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
-# تنظیمات نمایش
+# Display settings
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
-# خواندن فایل CSV
-df = pd.read_csv('C:\\0_DA\\Iot_DataAnalyst\\smart_grid_dataset_city_hourly_enriched.csv')  # نام فایل خود را جایگزین کنید
+# Read CSV file
+df = pd.read_csv('C:\\0_DA\\Iot_DataAnalyst\\smart_grid_dataset_city_hourly_enriched.csv') # Replace with your file name
 
 print("=" * 80)
-print("داده‌ها با موفقیت بارگذاری شدند!")
+print("Data loaded successfully!")
 print("=" * 80)
-print(f"تعداد سطرها: {df.shape[0]}")
-print(f"تعداد ستون‌ها: {df.shape[1]}")
-print("\n5 سطر اول داده‌ها:")
+print(f"Number of rows: {df.shape[0]}")
+print(f"Number of columns: {df.shape[1]}")
+print("\nFirst 5 rows of data:")
 print(df.head())
-print("\nنام ستون‌ها:")
+print("\nColumn names:")
 print(df.columns.tolist())
+
 
