@@ -13,7 +13,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
 # Read CSV file
-df = pd.read_csv('C:\\0_DA\\Iot_DataAnalyst\\smart_grid_dataset_city_hourly_enriched.csv') # Replace with your file name
+df = pd.read_csv('C:\\0_DA\\Iot_DataAnalyst\\smart_grid_dataset_city_modified.csv') # Replace with your file name
 
 print("=" * 80)
 print("Data loaded successfully!")
@@ -26,111 +26,6 @@ print("\nColumn names:")
 print(df.columns.tolist())
 
 
-
-# # =============================================================================
-# # 2. Data Cleaning
-# # =============================================================================
-#
-# print("\n" + "=" * 80)
-# print("Data Quality Check")
-# print("=" * 80)
-#
-# # Display general information
-# print("\nGeneral data information:")
-# df.info()
-#
-# # Check for missing values
-# print("\n\nMissing (Null) values in each column:")
-# missing_values = df.isnull().sum()
-# missing_percent = (missing_values / len(df)) * 100
-# missing_df = pd.DataFrame({
-#     'Number of Missing Values': missing_values,
-#     'Percentage': missing_percent
-# })
-# print(missing_df[missing_df['Number of Missing Values'] > 0])
-#
-# # Remove or fill missing values
-# # Method 1: Drop rows with missing important values
-# # Note: Check your actual column names first
-# important_columns = ['Voltage (V)', 'Current (A)']
-# # Add 'Power Consumption' only if it exists in your DataFrame
-# if 'Power Consumption' in df.columns:
-#     important_columns.append('Power Consumption')
-#
-# df_cleaned = df.dropna(subset=important_columns)
-#
-# # Method 2: Fill numeric values with median
-# numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns
-# for col in numeric_columns:
-#     if df_cleaned[col].isnull().sum() > 0:
-#         df_cleaned[col].fillna(df_cleaned[col].median(), inplace=True)
-#
-# # Check and remove duplicate rows
-# duplicates = df_cleaned.duplicated().sum()
-# print(f"\n\nNumber of duplicate rows: {duplicates}")
-# df_cleaned = df_cleaned.drop_duplicates()
-#
-# # Detect outliers using IQR method
-# def detect_outliers_iqr(data, column):
-#     Q1 = data[column].quantile(0.25)
-#     Q3 = data[column].quantile(0.75)
-#     IQR = Q3 - Q1
-#     lower_bound = Q1 - 1.5 * IQR
-#     upper_bound = Q3 + 1.5 * IQR
-#     outliers = data[(data[column] < lower_bound) | (data[column] > upper_bound)]
-#     return outliers, lower_bound, upper_bound
-#
-# print("\n\nChecking outliers in key columns:")
-# # Only check columns that exist in your DataFrame
-# columns_to_check = ['Voltage (V)', 'Current (A)']
-# if 'Power Consumption' in df_cleaned.columns:
-#     columns_to_check.append('Power Consumption')
-#
-# for col in columns_to_check:
-#     if col in df_cleaned.columns:
-#         outliers, lower, upper = detect_outliers_iqr(df_cleaned, col)
-#         print(f"{col}: {len(outliers)} outliers (acceptable range: {lower:.2f} - {upper:.2f})")
-#
-# print("\n" + "=" * 80)
-# print(f"Cleaning completed! Number of remaining rows: {len(df_cleaned)}")
-# print("=" * 80)
-
-# Check unique countries in the dataset
-print("Countries in the dataset:")
-print("=" * 50)
-
-if 'Country' in df.columns:
-    country_counts = df['Country'].value_counts()
-    print(f"\nTotal countries: {len(country_counts)}")
-    print(f"\nCountry distribution:")
-    print(country_counts)
-
-    print(f"\n\nPercentage distribution:")
-    country_percent = (country_counts / len(df)) * 100
-    country_summary = pd.DataFrame({
-        'Count': country_counts,
-        'Percentage': country_percent
-    })
-    print(country_summary)
-
-elif 'country' in df.columns:
-    country_counts = df['country'].value_counts()
-    print(f"\nTotal countries: {len(country_counts)}")
-    print(f"\nCountry distribution:")
-    print(country_counts)
-
-    print(f"\n\nPercentage distribution:")
-    country_percent = (country_counts / len(df)) * 100
-    country_summary = pd.DataFrame({
-        'Count': country_counts,
-        'Percentage': country_percent
-    })
-    print(country_summary)
-
-else:
-    print("No 'Country' or 'country' column found in the dataset")
-    print(f"\nAvailable columns:")
-    print(df.columns.tolist())
 
 # =============================================================================
 # 2. Data Cleaning - Modified for Asian Power Standards
@@ -147,7 +42,7 @@ print("=" * 80)
 print("\nGeneral data information:")
 df.info()
 
-# Check for missing values
+# Check for missing values (but don't remove them yet)
 print("\n\nMissing (Null) values in each column:")
 missing_values = df.isnull().sum()
 missing_percent = (missing_values / len(df)) * 100
@@ -157,96 +52,84 @@ missing_df = pd.DataFrame({
 })
 print(missing_df[missing_df['Number of Missing Values'] > 0])
 
-# Remove completely empty columns
+# Identify completely empty columns (but don't remove yet)
 completely_empty = missing_df[missing_df['Percentage'] == 100.0].index.tolist()
 if completely_empty:
-    print(f"\nRemoving completely empty columns: {completely_empty}")
-    df = df.drop(columns=completely_empty)
+    print(f"\nCompletely empty columns detected: {completely_empty}")
+    print("Note: These columns will NOT be removed")
 
 # Clean Country column - remove non-country values
 non_countries = ['SolarPark', 'Substation', 'Site', 'Industrial', 'LoadHub', 'Center']
 if 'Country' in df.columns:
     print(f"\n\nCleaning Country column...")
     print(f"Rows before cleaning: {len(df)}")
-    df = df[~df['Country'].isin(non_countries)]
-    print(f"Rows after removing non-country values: {len(df)}")
+    df_cleaned = df[~df['Country'].isin(non_countries)].copy()
+    print(f"Rows after removing non-country values: {len(df_cleaned)}")
     print(f"\nRemaining countries:")
-    print(df['Country'].value_counts())
+    print(df_cleaned['Country'].value_counts())
+else:
+    df_cleaned = df.copy()
 
-# Remove or fill missing values
-important_columns = ['Voltage (V)', 'Current (A)']
-if 'Power Consumption' in df.columns:
-    important_columns.append('Power Consumption')
-
-df_cleaned = df.dropna(subset=important_columns)
-
-# Fill numeric missing values with median
+# Fill numeric missing values with median (instead of removing rows)
 numeric_columns = df_cleaned.select_dtypes(include=[np.number]).columns
+print("\n\nFilling missing numeric values with median:")
 for col in numeric_columns:
-    if df_cleaned[col].isnull().sum() > 0:
-        df_cleaned[col].fillna(df_cleaned[col].median(), inplace=True)
+    missing_count = df_cleaned[col].isnull().sum()
+    if missing_count > 0:
+        median_value = df_cleaned[col].median()
+        df_cleaned[col].fillna(median_value, inplace=True)
+        print(f"  {col}: Filled {missing_count} missing values with median ({median_value:.2f})")
 
 # Remove duplicate rows
 duplicates = df_cleaned.duplicated().sum()
 print(f"\n\nNumber of duplicate rows: {duplicates}")
-df_cleaned = df_cleaned.drop_duplicates()
+if duplicates > 0:
+    df_cleaned = df_cleaned.drop_duplicates()
+    print(f"Removed {duplicates} duplicate rows")
 
-# Define voltage standards for each Asian country
-VOLTAGE_STANDARDS = {
-    'Japan': (90, 110),  # 100V system
-    'Korea': (200, 240),  # 220V system
-    'Thailand': (200, 240),  # 220V system
-    'Vietnam': (200, 240),  # 220V system
-    'Malaysia': (200, 250),  # 240V system
-    'Singapur': (200, 250),  # 230V system
-    'Philippinen': (200, 240),  # 220V system
-    'Indonesien': (200, 240),  # 220V system
-    'Indien': (200, 250),  # 230V system (but highly variable)
+# Define voltage standards for Asian continent (general range)
+ASIA_VOLTAGE_STANDARD = {
+    'min': 90,  # Minimum for Japan's 100V system
+    'max': 250  # Maximum for 240V systems
 }
 
-
-def detect_outliers_by_country(data, voltage_col='Voltage (V)', country_col='Country'):
-    """
-    Detect voltage outliers based on country-specific standards
-    """
-    all_outliers = []
-
-    for country in data[country_col].unique():
-        country_data = data[data[country_col] == country]
-
-        if country in VOLTAGE_STANDARDS:
-            lower_bound, upper_bound = VOLTAGE_STANDARDS[country]
-        else:
-            lower_bound, upper_bound = (200, 240)  # Default for 220V systems
-
-        outliers = country_data[
-            (country_data[voltage_col] < lower_bound) |
-            (country_data[voltage_col] > upper_bound)
-            ]
-
-        all_outliers.append(outliers)
-
-        print(f"\n{country}:")
-        print(f"  Standard range: {lower_bound}V - {upper_bound}V")
-        print(f"  Outliers: {len(outliers)} ({len(outliers) / len(country_data) * 100:.2f}%)")
-
-        if len(outliers) > 0:
-            print(f"  Min outlier: {outliers[voltage_col].min():.2f}V")
-            print(f"  Max outlier: {outliers[voltage_col].max():.2f}V")
-
-    return pd.concat(all_outliers) if all_outliers else pd.DataFrame()
-
-
-print("\n\nChecking voltage outliers by country:")
+print("\n\n" + "=" * 80)
+print("OUTLIER DETECTION - Asian Continent Standards")
 print("=" * 80)
 
-if 'Country' in df_cleaned.columns and 'Voltage (V)' in df_cleaned.columns:
-    voltage_outliers = detect_outliers_by_country(df_cleaned)
-    print(f"\n\nTotal voltage outliers across all countries: {len(voltage_outliers)}")
+
+# Detect voltage outliers based on Asian standards
+def detect_voltage_outliers_asia(data, voltage_col='Voltage (V)'):
+    """
+    Detect voltage outliers based on Asian continent standards
+    Acceptable range: 90V - 250V (covers all Asian voltage systems)
+    """
+    lower_bound = ASIA_VOLTAGE_STANDARD['min']
+    upper_bound = ASIA_VOLTAGE_STANDARD['max']
+
+    outliers = data[
+        (data[voltage_col] < lower_bound) |
+        (data[voltage_col] > upper_bound)
+        ]
+
+    print(f"\nAsian Voltage Standard Range: {lower_bound}V - {upper_bound}V")
+    print(f"Total outliers detected: {len(outliers)} ({len(outliers) / len(data) * 100:.2f}%)")
+
+    if len(outliers) > 0:
+        print(f"Outlier voltage range: {outliers[voltage_col].min():.2f}V - {outliers[voltage_col].max():.2f}V")
+        print("\nOutliers by country:")
+        outlier_by_country = outliers.groupby('Country')[voltage_col].agg(['count', 'min', 'max'])
+        print(outlier_by_country)
+
+    return outliers
 
 
 # Detect current outliers using IQR method
 def detect_outliers_iqr(data, column):
+    """
+    Detect outliers using Interquartile Range (IQR) method
+    Outliers are values outside [Q1 - 1.5*IQR, Q3 + 1.5*IQR]
+    """
     Q1 = data[column].quantile(0.25)
     Q3 = data[column].quantile(0.75)
     IQR = Q3 - Q1
@@ -256,41 +139,117 @@ def detect_outliers_iqr(data, column):
     return outliers, lower_bound, upper_bound
 
 
-print("\n\nChecking current outliers:")
+# Step 1: DETECT all outliers (don't remove yet)
+print("\n1. VOLTAGE OUTLIERS:")
+print("-" * 80)
+if 'Voltage (V)' in df_cleaned.columns:
+    voltage_outliers = detect_voltage_outliers_asia(df_cleaned)
+else:
+    voltage_outliers = pd.DataFrame()
+    print("Voltage column not found")
+
+print("\n2. CURRENT OUTLIERS:")
+print("-" * 80)
 if 'Current (A)' in df_cleaned.columns:
-    outliers, lower, upper = detect_outliers_iqr(df_cleaned, 'Current (A)')
-    print(f"Current (A): {len(outliers)} outliers (acceptable range: {lower:.2f} - {upper:.2f})")
+    current_outliers, current_lower, current_upper = detect_outliers_iqr(df_cleaned, 'Current (A)')
+    print(f"Current (A) outliers: {len(current_outliers)} detected")
+    print(f"Acceptable range: {current_lower:.2f}A - {current_upper:.2f}A")
+    if len(current_outliers) > 0:
+        print(
+            f"Outlier range: {current_outliers['Current (A)'].min():.2f}A - {current_outliers['Current (A)'].max():.2f}A")
+else:
+    current_outliers = pd.DataFrame()
+    print("Current column not found")
 
+print("\n3. POWER CONSUMPTION OUTLIERS:")
+print("-" * 80)
 if 'Power Consumption' in df_cleaned.columns:
-    outliers, lower, upper = detect_outliers_iqr(df_cleaned, 'Power Consumption')
-    print(f"Power Consumption: {len(outliers)} outliers (acceptable range: {lower:.2f} - {upper:.2f})")
+    power_outliers, power_lower, power_upper = detect_outliers_iqr(df_cleaned, 'Power Consumption')
+    print(f"Power Consumption outliers: {len(power_outliers)} detected")
+    print(f"Acceptable range: {power_lower:.2f} - {power_upper:.2f}")
+    if len(power_outliers) > 0:
+        print(
+            f"Outlier range: {power_outliers['Power Consumption'].min():.2f} - {power_outliers['Power Consumption'].max():.2f}")
+else:
+    power_outliers = pd.DataFrame()
+    print("Power Consumption column not found")
 
-# Remove extreme voltage outliers (likely sensor errors)
-print("\n\nRemoving extreme voltage outliers:")
-extreme_low = 50  # Below 50V is sensor error
-extreme_high = 400  # Above 400V is sensor error
+# Create a combined outlier index
+all_outlier_indices = set()
+if len(voltage_outliers) > 0:
+    all_outlier_indices.update(voltage_outliers.index)
+if len(current_outliers) > 0:
+    all_outlier_indices.update(current_outliers.index)
+if len(power_outliers) > 0:
+    all_outlier_indices.update(power_outliers.index)
 
-before_count = len(df_cleaned)
-df_cleaned = df_cleaned[
-    (df_cleaned['Voltage (V)'] >= extreme_low) &
-    (df_cleaned['Voltage (V)'] <= extreme_high)
-    ]
-removed = before_count - len(df_cleaned)
-print(f"Removed {removed} rows with extreme voltage (< {extreme_low}V or > {extreme_high}V)")
-
-print("\n" + "=" * 80)
-print(f"Cleaning completed! Number of remaining rows: {len(df_cleaned)}")
+print("\n\n" + "=" * 80)
+print("OUTLIER SUMMARY")
 print("=" * 80)
+print(f"Total unique rows with outliers: {len(all_outlier_indices)}")
+print(f"Percentage of dataset: {len(all_outlier_indices) / len(df_cleaned) * 100:.2f}%")
 
-# Summary statistics by country
-print("\n\nVoltage statistics by country:")
+# Display current dataset statistics before removal
+print("\n\nCurrent dataset statistics by country:")
 print("=" * 80)
-voltage_stats = df_cleaned.groupby('Country')['Voltage (V)'].agg(['count', 'mean', 'std', 'min', 'max'])
-print(voltage_stats)
+if 'Country' in df_cleaned.columns and 'Voltage (V)' in df_cleaned.columns:
+    voltage_stats = df_cleaned.groupby('Country')['Voltage (V)'].agg(['count', 'mean', 'std', 'min', 'max'])
+    print(voltage_stats)
 
-print("\n\nFinal dataset shape:")
+print("\n\nCurrent dataset shape:")
 print(f"Rows: {len(df_cleaned)}")
 print(f"Columns: {len(df_cleaned.columns)}")
+
+print("\n" + "=" * 80)
+print("CLEANING PHASE 1 COMPLETED - No data removed yet")
+print("=" * 80)
+print("\nTo remove detected outliers, run the next code block")
+
+# =============================================================================
+# SEPARATE COMMAND: Remove outliers
+# =============================================================================
+
+print("\n\n" + "=" * 80)
+print("REMOVING DETECTED OUTLIERS")
+print("=" * 80)
+
+# Store original size
+original_size = len(df_cleaned)
+
+# Remove all rows with outliers
+df_final = df_cleaned.drop(index=list(all_outlier_indices))
+
+removed_count = original_size - len(df_final)
+print(f"\nRows removed: {removed_count}")
+print(f"Rows remaining: {len(df_final)}")
+print(f"Removal percentage: {removed_count / original_size * 100:.2f}%")
+
+# Display final statistics
+print("\n\nFinal dataset statistics by country:")
+print("=" * 80)
+if 'Country' in df_final.columns and 'Voltage (V)' in df_final.columns:
+    final_voltage_stats = df_final.groupby('Country')['Voltage (V)'].agg(['count', 'mean', 'std', 'min', 'max'])
+    print(final_voltage_stats)
+
+print("\n\nFinal dataset shape:")
+print(f"Rows: {len(df_final)}")
+print(f"Columns: {len(df_final.columns)}")
+
+# Verify no outliers remain
+print("\n\nVerifying cleaned data:")
+print("-" * 80)
+if 'Voltage (V)' in df_final.columns:
+    voltage_check = len(df_final[
+                            (df_final['Voltage (V)'] < ASIA_VOLTAGE_STANDARD['min']) |
+                            (df_final['Voltage (V)'] > ASIA_VOLTAGE_STANDARD['max'])
+                            ])
+    print(f"Voltage outliers remaining: {voltage_check}")
+
+print("\n" + "=" * 80)
+print("DATA CLEANING COMPLETED SUCCESSFULLY")
+print("=" * 80)
+print(f"\nCleaned dataset saved in variable: df_final")
+
 
 
 
