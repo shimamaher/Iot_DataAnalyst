@@ -31,9 +31,6 @@ print(df.columns.tolist())
 # 2. Data Cleaning - Modified for Asian Power Standards
 # =============================================================================
 
-import numpy as np
-import pandas as pd
-
 print("\n" + "=" * 80)
 print("Data Quality Check - Asian Power Grid Standards")
 print("=" * 80)
