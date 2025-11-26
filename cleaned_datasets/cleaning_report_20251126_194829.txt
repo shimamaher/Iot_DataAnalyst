@@ -1,0 +1,20 @@
+
+CLEANING REPORT – ASIAN POWER GRID
+===============================================
+Timestamp: 20251126_194829
+
+Original rows:     50010
+Final rows:        49984
+Duplicates removed: 10
+Outliers removed:   16
+
+Processed columns:
+- DecommissionStatus cleaned into OperationalStatus + DecommissionDate
+- Dates converted to datetime
+- region column dropped
+- One-hot encoding for categorical columns
+- Numeric missing values filled
+
+Saved files:
+- Cleaned CSV: cleaned_datasets\cleaned_data_20251126_194829.csv
+- Report:      cleaned_datasets\cleaning_report_20251126_194829.txt
