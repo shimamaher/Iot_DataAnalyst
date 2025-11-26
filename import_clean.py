@@ -1,85 +1,116 @@
+
+# =============================================================================
+# STEP 1: Load Data
+# =============================================================================
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import warnings
+
 warnings.filterwarnings('ignore')
 
-# Display settings
-plt.style.use('seaborn-v0_8-darkgrid')
-sns.set_palette("husl")
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
+# Set style for better visualizations
+sns.set_style("whitegrid")
+plt.rcParams['figure.figsize'] = (12, 6)
 
-# Read CSV file
+# Load data
 df = pd.read_csv('C:\\0_DA\\Iot_DataAnalyst\\smart_grid_dataset_city_modified.csv') # Replace with your file name
-
-print("=" * 80)
-print("Data loaded successfully!")
-print("=" * 80)
-print(f"Number of rows: {df.shape[0]}")
-print(f"Number of columns: {df.shape[1]}")
-print("\nFirst 5 rows of data:")
-print(df.head())
-print("\nColumn names:")
-print(df.columns.tolist())
+print(" Data loaded successfully!")
+print(f"Shape: {df.shape}")
 
 # =============================================================================
-# 2. Data Cleaning - Optimized Version
+# STEP 2: Initial Data Inspection
 # =============================================================================
-
-
 print("\n" + "=" * 80)
-print("Data Quality Check - Asian Power Grid Standards")
+print("STEP 2: INITIAL DATA INSPECTION")
 print("=" * 80)
 
-
-# ===== Section 1: Initial Data Information =====
-print("\nGeneral data information:")
+# 2.1 Basic Information
+print("\n--- 2.1 Dataset Information ---")
 df.info()
 
+# 2.2 First and Last Rows
+print("\n--- 2.2 First 5 Rows ---")
+print(df.head())
 
-# ===== Section 2: Identify Missing Values =====
-print("\n\nMissing (Null) values:")
+print("\n--- 2.3 Last 5 Rows ---")
+print(df.tail())
+
+# 2.3 Data Types
+print("\n--- 2.4 Data Types ---")
+print(df.dtypes.value_counts())
+
+# =============================================================================
+# STEP 3: EXPLORATORY DATA ANALYSIS (EDA)
+# =============================================================================
+print("\n" + "=" * 80)
+print("STEP 3: EXPLORATORY DATA ANALYSIS (EDA)")
+print("=" * 80)
+
+# 3.1 Statistical Summary
+print("\n--- 3.1 Statistical Summary (Numeric Columns) ---")
+print(df.describe())
+
+print("\n--- 3.2 Statistical Summary (All Columns) ---")
+print(df.describe(include='all'))
+
+# 3.3 Missing Values Analysis
+print("\n--- 3.3 Missing Values Analysis ---")
 missing_df = pd.DataFrame({
-    'Missing': df.isnull().sum(),
-    'Percentage': (df.isnull().sum() / len(df)) * 100
-}).query('Missing > 0')
+    'Column': df.columns,
+    'Missing_Count': df.isnull().sum(),
+    'Missing_Percent': (df.isnull().sum() / len(df)) * 100,
+    'Data_Type': df.dtypes
+})
+missing_df = missing_df[missing_df['Missing_Count'] > 0].sort_values('Missing_Percent', ascending=False)
 print(missing_df)
 
-
-df_cleaned = df.copy()
-
-
-# ===== Section 3: Fill Missing Values with Median =====
-numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns
-print("\n\nFilling missing numeric values with median:")
-for col in numeric_cols:
-    missing_count = df_cleaned[col].isnull().sum()
-    if missing_count > 0:
-        median_val = df_cleaned[col].median()
-        df_cleaned[col].fillna(median_val, inplace=True)
-        print(f"  {col}: Filled {missing_count} values with {median_val:.2f}")
-
-
-# ===== Section 4: Remove Duplicate Rows =====
-duplicates = df_cleaned.duplicated().sum()
+# 3.4 Duplicate Analysis
+print("\n--- 3.4 Duplicate Rows ---")
+duplicates = df.duplicated().sum()
+print(f"Total duplicates: {duplicates} ({duplicates / len(df) * 100:.2f}%)")
 if duplicates > 0:
-    df_cleaned = df_cleaned.drop_duplicates()
-    print(f"\n\nRemoved {duplicates} duplicate rows")
+    print("\nSample of duplicate rows:")
+    print(df[df.duplicated(keep=False)].head(10))
 
+# 3.5 Unique Values Analysis
+print("\n--- 3.5 Unique Values in Each Column ---")
+unique_df = pd.DataFrame({
+    'Column': df.columns,
+    'Unique_Values': [df[col].nunique() for col in df.columns],
+    'Sample_Values': [df[col].unique()[:5] for col in df.columns]
+})
+print(unique_df)
 
-# ===== Section 5: Define Asian Voltage Standards =====
-ASIA_VOLTAGE_STANDARD = {'min': 90, 'max': 250}
+# =============================================================================
+# STEP 4: DISTRIBUTION ANALYSIS (Numeric Columns)
+# =============================================================================
+print("\n" + "=" * 80)
+print("STEP 4: DISTRIBUTION ANALYSIS")
+print("=" * 80)
 
+numeric_cols = df.select_dtypes(include=[np.number]).columns
 
-print("\n\n" + "=" * 80)
-print("OUTLIER DETECTION - Asian Standards")
+for col in numeric_cols:
+    print(f"\n--- Distribution of {col} ---")
+    print(f"Mean: {df[col].mean():.2f}")
+    print(f"Median: {df[col].median():.2f}")
+    print(f"Std: {df[col].std():.2f}")
+    print(f"Min: {df[col].min():.2f}")
+    print(f"Max: {df[col].max():.2f}")
+    print(f"Skewness: {df[col].skew():.2f}")
+    print(f"Kurtosis: {df[col].kurtosis():.2f}")
+
+# =============================================================================
+# STEP 5: OUTLIER DETECTION (Before deciding to remove!)
+# =============================================================================
+print("\n" + "=" * 80)
+print("STEP 5: OUTLIER DETECTION ANALYSIS")
 print("=" * 80)
 
 
-# ===== Section 6: Detect Outliers using IQR Method =====
 def detect_outliers_iqr(data, column):
     Q1, Q3 = data[column].quantile([0.25, 0.75])
     IQR = Q3 - Q1
@@ -88,124 +119,211 @@ def detect_outliers_iqr(data, column):
     return outliers, lower, upper
 
 
-all_outlier_indices = set()
+outlier_summary = []
+for col in numeric_cols:
+    outliers, lower, upper = detect_outliers_iqr(df, col)
+    outlier_summary.append({
+        'Column': col,
+        'Outlier_Count': len(outliers),
+        'Outlier_Percent': len(outliers) / len(df) * 100,
+        'Lower_Bound': lower,
+        'Upper_Bound': upper,
+        'Outlier_Min': outliers[col].min() if len(outliers) > 0 else None,
+        'Outlier_Max': outliers[col].max() if len(outliers) > 0 else None
+    })
 
-
-# Voltage outliers
-if 'Voltage (V)' in df_cleaned.columns:
-    voltage_outliers = df_cleaned[
-        (df_cleaned['Voltage (V)'] < ASIA_VOLTAGE_STANDARD['min']) |
-        (df_cleaned['Voltage (V)'] > ASIA_VOLTAGE_STANDARD['max'])
-    ]
-    print(f"\nVoltage outliers: {len(voltage_outliers)} ({len(voltage_outliers)/len(df_cleaned)*100:.2f}%)")
-    all_outlier_indices.update(voltage_outliers.index)
-
-
-# Current outliers
-if 'Current (A)' in df_cleaned.columns:
-    current_outliers, c_lower, c_upper = detect_outliers_iqr(df_cleaned, 'Current (A)')
-    print(f"Current outliers: {len(current_outliers)} (Range: {c_lower:.2f}A - {c_upper:.2f}A)")
-    all_outlier_indices.update(current_outliers.index)
-
-
-# Power outliers
-if 'Power Consumption' in df_cleaned.columns:
-    power_outliers, p_lower, p_upper = detect_outliers_iqr(df_cleaned, 'Power Consumption')
-    print(f"Power outliers: {len(power_outliers)} (Range: {p_lower:.2f} - {p_upper:.2f})")
-    all_outlier_indices.update(power_outliers.index)
-
-
-print(f"\n\nTotal unique outlier rows: {len(all_outlier_indices)} ({len(all_outlier_indices)/len(df_cleaned)*100:.2f}%)")
-
-
-# ===== Section 7: Remove Outliers =====
-print("\n" + "=" * 80)
-print("REMOVING OUTLIERS")
-print("=" * 80)
-
-
-original_size = len(df_cleaned)
-df_final = df_cleaned.drop(index=list(all_outlier_indices))
-
-
-print(f"\nRows removed: {original_size - len(df_final)}")
-print(f"Rows remaining: {len(df_final)}")
-print(f"Removal percentage: {(original_size - len(df_final))/original_size*100:.2f}%")
-
-
-# ===== Section 8: Final Statistics =====
-if 'Country' in df_final.columns and 'Voltage (V)' in df_final.columns:
-    print("\n\nFinal statistics by country:")
-    print(df_final.groupby('Country')['Voltage (V)'].agg(['count', 'mean', 'std', 'min', 'max']))
-
-
-print(f"\n\nFinal shape: {df_final.shape}")
-print("=" * 80)
-print("DATA CLEANING COMPLETED")
-print("=" * 80)
+outlier_df = pd.DataFrame(outlier_summary)
+print("\n--- Outlier Summary ---")
+print(outlier_df)
 
 # =============================================================================
-# Save Cleaned Data
+# STEP 6: VISUALIZATION (CRITICAL!)
 # =============================================================================
-
-import os
-from datetime import datetime
-
 print("\n" + "=" * 80)
-print("SAVING CLEANED DATA")
+print("STEP 6: DATA VISUALIZATION")
 print("=" * 80)
 
-# Create output folder
-output_folder = 'cleaned_datasets'
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-    print(f" Created folder: {output_folder}")
+# 6.1 Distribution Plots
+print("\n--- Creating distribution plots ---")
+fig, axes = plt.subplots(len(numeric_cols), 2, figsize=(15, 5 * len(numeric_cols)))
+fig.suptitle('Distribution Analysis of Numeric Columns', fontsize=16, y=1.001)
 
-# Generate filename with timestamp
-timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-output_file = os.path.join(output_folder, f'cleaned_data_{timestamp}.csv')
+for idx, col in enumerate(numeric_cols):
+    # Histogram
+    axes[idx, 0].hist(df[col].dropna(), bins=50, edgecolor='black', alpha=0.7)
+    axes[idx, 0].set_title(f'Histogram: {col}')
+    axes[idx, 0].set_xlabel(col)
+    axes[idx, 0].set_ylabel('Frequency')
+    axes[idx, 0].axvline(df[col].mean(), color='red', linestyle='--', label='Mean')
+    axes[idx, 0].axvline(df[col].median(), color='green', linestyle='--', label='Median')
+    axes[idx, 0].legend()
 
-# Save cleaned data
-df_final.to_csv(output_file, index=False)
+    # Boxplot
+    axes[idx, 1].boxplot(df[col].dropna(), vert=False)
+    axes[idx, 1].set_title(f'Boxplot: {col}')
+    axes[idx, 1].set_xlabel(col)
 
-# Save statistics report
-report_file = os.path.join(output_folder, f'cleaning_report_{timestamp}.txt')
+plt.tight_layout()
+plt.savefig('eda_distributions.png', dpi=300, bbox_inches='tight')
+print(" Saved: eda_distributions.png")
+plt.show()
+
+# 6.2 Correlation Heatmap
+if len(numeric_cols) > 1:
+    print("\n--- Creating correlation heatmap ---")
+    plt.figure(figsize=(12, 10))
+    correlation = df[numeric_cols].corr()
+    sns.heatmap(correlation, annot=True, fmt='.2f', cmap='coolwarm',
+                center=0, square=True, linewidths=1)
+    plt.title('Correlation Heatmap', fontsize=16, pad=20)
+    plt.tight_layout()
+    plt.savefig('eda_correlation.png', dpi=300, bbox_inches='tight')
+    print(" Saved: eda_correlation.png")
+    plt.show()
+
+# 6.3 Missing Values Heatmap
+if df.isnull().sum().sum() > 0:
+    print("\n--- Creating missing values heatmap ---")
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(df.isnull(), cbar=True, yticklabels=False, cmap='viridis')
+    plt.title('Missing Values Heatmap', fontsize=16)
+    plt.tight_layout()
+    plt.savefig('eda_missing_values.png', dpi=300, bbox_inches='tight')
+    print(" Saved: eda_missing_values.png")
+    plt.show()
+
+# 6.4 Categorical Analysis (if exists)
+categorical_cols = df.select_dtypes(include=['object']).columns
+if len(categorical_cols) > 0:
+    print("\n--- Categorical Columns Analysis ---")
+    for col in categorical_cols:
+        print(f"\n{col}:")
+        print(df[col].value_counts())
+
+        # Plot
+        plt.figure(figsize=(10, 6))
+        df[col].value_counts().plot(kind='bar', edgecolor='black')
+        plt.title(f'Distribution of {col}', fontsize=14)
+        plt.xlabel(col)
+        plt.ylabel('Count')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.savefig(f'eda_{col.lower().replace(" ", "_")}.png', dpi=300, bbox_inches='tight')
+        print(f" Saved: eda_{col.lower().replace(' ', '_')}.png")
+        plt.show()
+
+# =============================================================================
+# STEP 7: DECISION MAKING (Based on EDA findings)
+# =============================================================================
+print("\n" + "=" * 80)
+print("STEP 7: DATA CLEANING DECISIONS (Based on EDA)")
+print("=" * 80)
+
+print("""
+Based on the EDA analysis above, you should now decide:
+
+1. Missing Values:
+    Are missing values random or systematic?
+    Should we fill them (mean/median/mode) or drop rows?
+    Is there a pattern in missing data?
+
+2. Outliers:
+    Are outliers real data or errors?
+    Should we remove, cap, or keep them?
+    Do they represent important extreme cases?
+
+3. Duplicates:
+    Are they true duplicates or legitimate repeated measurements?
+
+4. Feature Selection:
+    Which columns are relevant for analysis?
+    Are there highly correlated features to remove?
+
+5. Data Transformation:
+    Do we need normalization/standardization?
+    Do we need to handle skewed distributions?
+
+ STOP HERE and review all visualizations and statistics!
+ Make informed decisions based on domain knowledge!
+""")
+
+# =============================================================================
+# STEP 8: GENERATE EDA REPORT
+# =============================================================================
+print("\n" + "=" * 80)
+print("STEP 8: GENERATING EDA REPORT")
+print("=" * 80)
+
 report = f"""
-Data Cleaning Report
+EXPLORATORY DATA ANALYSIS REPORT
 {'=' * 80}
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-Original Data:
-  - Rows: {len(df):,}
-  - Columns: {len(df.columns)}
+1. DATASET OVERVIEW
+{'-' * 80}
+   - Total Rows: {len(df):,}
+   - Total Columns: {len(df.columns)}
+   - Memory Usage: {df.memory_usage(deep=True).sum() / (1024 ** 2):.2f} MB
 
-Cleaning Steps:
-  - Duplicates removed: {df.duplicated().sum()}
-  - Outliers removed: {len(df) - len(df_final):,}
+2. DATA TYPES
+{'-' * 80}
+{df.dtypes.value_counts().to_string()}
 
-Final Data:
-  - Rows: {len(df_final):,}
-  - Columns: {len(df_final.columns)}
-  - Data loss: {(len(df) - len(df_final))/len(df)*100:.2f}%
+3. MISSING VALUES
+{'-' * 80}
+   - Total Missing: {df.isnull().sum().sum():,}
+   - Percentage: {(df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100:.2f}%
 
-File Information:
-  - Output file: {output_file}
-  - File size: {os.path.getsize(output_file) / (1024*1024):.2f} MB
-  - Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Columns with Missing Values:
+{missing_df.to_string() if len(missing_df) > 0 else '   None'}
 
-Column Names:
-{', '.join(df_final.columns)}
+4. DUPLICATE ROWS
+{'-' * 80}
+   - Total Duplicates: {duplicates:,}
+   - Percentage: {duplicates / len(df) * 100:.2f}%
+
+5. OUTLIER ANALYSIS
+{'-' * 80}
+{outlier_df.to_string()}
+
+6. NUMERIC COLUMNS SUMMARY
+{'-' * 80}
+{df[numeric_cols].describe().to_string()}
+
+7. CATEGORICAL COLUMNS
+{'-' * 80}
+{chr(10).join([f'{col}: {df[col].nunique()} unique values' for col in categorical_cols]) if len(categorical_cols) > 0 else '   None'}
+
+8. RECOMMENDATIONS
+{'-' * 80}
+   Based on this analysis, consider:
+
+   a) Missing Values:
+      - Review patterns in missing data
+      - Decide on imputation strategy
+
+   b) Outliers:
+      - {outlier_df['Outlier_Count'].sum():,} total outliers detected
+      - Review if they are valid data points
+
+   c) Data Quality:
+      - {duplicates} duplicate rows found
+      - Check for data entry errors
+
+   d) Next Steps:
+      - Make informed cleaning decisions
+      - Document all transformations
+      - Validate cleaned data
 
 {'=' * 80}
 """
 
-with open(report_file, 'w', encoding='utf-8') as f:
+with open('eda_report.txt', 'w', encoding='utf-8') as f:
     f.write(report)
 
-print(f"\n Files saved successfully:")
-print(f"    Data: {output_file}")
-print(f"    Report: {report_file}")
-print(f"    Size: {os.path.getsize(output_file) / (1024*1024):.2f} MB")
+print(" EDA Report saved: eda_report.txt")
+print("\n" + "=" * 80)
+print("EDA COMPLETED - Review all outputs before cleaning!")
 print("=" * 80)
-
 
 
