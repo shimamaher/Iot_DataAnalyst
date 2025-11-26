@@ -1,0 +1,26 @@
+
+Data Cleaning Report
+================================================================================
+
+Original Data:
+  - Rows: 50,010
+  - Columns: 27
+
+Cleaning Steps:
+  - Duplicates removed: 10
+  - Outliers removed: 26
+
+Final Data:
+  - Rows: 49,984
+  - Columns: 27
+  - Data loss: 0.05%
+
+File Information:
+  - Output file: cleaned_datasets\cleaned_data_20251126_105548.csv
+  - File size: 17.51 MB
+  - Created: 2025-11-26 10:55:49
+
+Column Names:
+Timestamp, City, Name, Country, region, Voltage (V), Current (A), Power Consumption (kW), Reactive Power (kVAR), Power Factor, Solar Power (kW), Wind Power (kW), Grid Supply (kW), Voltage Fluctuation (%), Overload Condition, Transformer Fault, Temperature (°C), Humidity (%), Electricity Price (EUR/kWh), Predicted Load (kW), SolarIrradiance, WindSpeed, Sensor_ID, SensorType, Manufacturer, InstallationDate, DecommissionStatus
+
+================================================================================
