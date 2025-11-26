@@ -144,6 +144,68 @@ print("=" * 80)
 print("DATA CLEANING COMPLETED")
 print("=" * 80)
 
+# =============================================================================
+# Save Cleaned Data
+# =============================================================================
+
+import os
+from datetime import datetime
+
+print("\n" + "=" * 80)
+print("SAVING CLEANED DATA")
+print("=" * 80)
+
+# Create output folder
+output_folder = 'cleaned_datasets'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+    print(f" Created folder: {output_folder}")
+
+# Generate filename with timestamp
+timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+output_file = os.path.join(output_folder, f'cleaned_data_{timestamp}.csv')
+
+# Save cleaned data
+df_final.to_csv(output_file, index=False)
+
+# Save statistics report
+report_file = os.path.join(output_folder, f'cleaning_report_{timestamp}.txt')
+report = f"""
+Data Cleaning Report
+{'=' * 80}
+
+Original Data:
+  - Rows: {len(df):,}
+  - Columns: {len(df.columns)}
+
+Cleaning Steps:
+  - Duplicates removed: {df.duplicated().sum()}
+  - Outliers removed: {len(df) - len(df_final):,}
+
+Final Data:
+  - Rows: {len(df_final):,}
+  - Columns: {len(df_final.columns)}
+  - Data loss: {(len(df) - len(df_final))/len(df)*100:.2f}%
+
+File Information:
+  - Output file: {output_file}
+  - File size: {os.path.getsize(output_file) / (1024*1024):.2f} MB
+  - Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Column Names:
+{', '.join(df_final.columns)}
+
+{'=' * 80}
+"""
+
+with open(report_file, 'w', encoding='utf-8') as f:
+    f.write(report)
+
+print(f"\n Files saved successfully:")
+print(f"    Data: {output_file}")
+print(f"    Report: {report_file}")
+print(f"    Size: {os.path.getsize(output_file) / (1024*1024):.2f} MB")
+print("=" * 80)
 
 
 
