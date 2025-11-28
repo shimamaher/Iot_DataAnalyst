@@ -1,0 +1,5 @@
+﻿,Voltage (V),Voltage (V),Current (A),Current (A),Power Consumption (kW),Power Consumption (kW),Power Factor,Power Factor,Reactive Power (kVAR),Reactive Power (kVAR)
+,mean,count,mean,count,mean,count,mean,count,mean,count
+Cluster_KMeans,,,,,,,,,,
+0,229.8670244124851,25465,16.583254433500652,25465,3.810281055017966,25465,0.8999883394282505,25465,0.8919880839116124,25465
+1,230.13339939331203,24519,38.8038025726433,24519,8.928477414619959,24519,0.9000099358976875,24519,2.303012330785916,24519

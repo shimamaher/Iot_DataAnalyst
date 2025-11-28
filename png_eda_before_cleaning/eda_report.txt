@@ -1,0 +1,98 @@
+
+EXPLORATORY DATA ANALYSIS REPORT
+================================================================================
+Generated: 2025-11-26 14:24:33
+
+1. DATASET OVERVIEW
+--------------------------------------------------------------------------------
+   - Total Rows: 50,010
+   - Total Columns: 27
+   - Memory Usage: 35.27 MB
+
+2. DATA TYPES
+--------------------------------------------------------------------------------
+float64    15
+object     10
+int64       2
+
+3. MISSING VALUES
+--------------------------------------------------------------------------------
+   - Total Missing: 0
+   - Percentage: 0.00%
+
+Columns with Missing Values:
+   None
+
+4. DUPLICATE ROWS
+--------------------------------------------------------------------------------
+   - Total Duplicates: 10
+   - Percentage: 0.02%
+
+5. OUTLIER ANALYSIS
+--------------------------------------------------------------------------------
+                         Column  Outlier_Count  Outlier_Percent  Lower_Bound  Upper_Bound  Outlier_Min  Outlier_Max
+0                   Voltage (V)            348         0.695861   216.440340   243.558728   207.671981   759.585933
+1                   Current (A)             12         0.023995   -17.810866    72.745622    92.140052   282.258491
+2        Power Consumption (kW)              0         0.000000    -4.104030    16.724797          NaN          NaN
+3         Reactive Power (kVAR)            146         0.291942    -1.300914     4.315536     4.317057     4.684119
+4                  Power Factor              0         0.000000     0.700172     1.099517          NaN          NaN
+5              Solar Power (kW)              0         0.000000   -24.799208    74.923615          NaN          NaN
+6               Wind Power (kW)              0         0.000000   -15.054354    45.078578          NaN          NaN
+7              Grid Supply (kW)            813         1.625675     0.000000     0.000000     0.008248    10.766046
+8       Voltage Fluctuation (%)              0         0.000000   -10.006870     9.994089          NaN          NaN
+9            Overload Condition           4956         9.910018     0.000000     0.000000     1.000000     1.000000
+10            Transformer Fault           1460         2.919416     0.000000     0.000000     1.000000     1.000000
+11             Temperature (°C)              0         0.000000    -5.104334    55.129604          NaN          NaN
+12                 Humidity (%)              0         0.000000    -9.358444   109.639794          NaN          NaN
+13  Electricity Price (EUR/kWh)              0         0.000000    -0.100676     0.698237          NaN          NaN
+14          Predicted Load (kW)              0         0.000000    -4.086338    16.707542          NaN          NaN
+15              SolarIrradiance           1477         2.953409    90.740000  1865.556000     0.000000    90.706000
+16                    WindSpeed            515         1.029794     0.659000     4.563000     0.000000     0.659000
+
+6. NUMERIC COLUMNS SUMMARY
+--------------------------------------------------------------------------------
+        Voltage (V)   Current (A)  Power Consumption (kW)  Reactive Power (kVAR)  Power Factor  Solar Power (kW)  Wind Power (kW)  Grid Supply (kW)  Voltage Fluctuation (%)  Overload Condition  Transformer Fault  Temperature (°C)  Humidity (%)  Electricity Price (EUR/kWh)  Predicted Load (kW)  SolarIrradiance     WindSpeed
+count  50010.000000  50010.000000            50010.000000           50010.000000  50010.000000      50010.000000     50010.000000      50010.000000             50010.000000        50010.000000       50010.000000      50010.000000  50010.000000                 50010.000000         50010.000000     50010.000000  50010.000000
+mean     230.148571     27.518828                6.320570               1.584056      0.899997         25.075866        15.008227          0.047189                -0.002744            0.099100           0.029194         25.019450     50.090533                     0.299090             6.320450       962.197830      2.564026
+std       10.028706     13.209750                2.990116               0.964820      0.057741         14.434712         8.662999          0.460236                 2.884272            0.298799           0.168352          8.657147     17.263209                     0.115497             2.997210       365.713021      0.704622
+min      207.671981      5.001239                1.089178               0.113665      0.800001          0.000115         0.000067          0.000000                -4.999913            0.000000           0.000000         10.000016     20.000423                     0.100002             1.043487         0.000000      0.000000
+25%      226.609736     16.147817                3.706780               0.805255      0.849926         12.596850         7.495496          0.000000                -2.506510            0.000000           0.000000         17.483392     35.265895                     0.198917             3.711367       756.296000      2.123000
+50%      230.009964     27.584660                6.339975               1.386454      0.900119         25.033991        15.036198          0.000000                -0.009397            0.000000           0.000000         25.052471     49.995724                     0.298927             6.328211      1200.000000      2.693000
+75%      233.389333     38.786939                8.913987               2.209367      0.949762         37.527556        22.528729          0.000000                 2.493729            0.000000           0.000000         32.541877     65.015455                     0.398645             8.909837      1200.000000      3.099000
+max      759.585933    282.258491               12.103199               4.684119      0.999997         49.998963        29.997815         10.766046                 4.999946            1.000000           1.000000         39.999949     79.997923                     0.499996            12.483253      1200.000000      4.284000
+
+7. CATEGORICAL COLUMNS
+--------------------------------------------------------------------------------
+Timestamp: 12500 unique values
+City: 16 unique values
+Name: 16 unique values
+Country: 15 unique values
+region: 1 unique values
+Sensor_ID: 16 unique values
+SensorType: 3 unique values
+Manufacturer: 4 unique values
+InstallationDate: 5 unique values
+DecommissionStatus: 7 unique values
+
+8. RECOMMENDATIONS
+--------------------------------------------------------------------------------
+   Based on this analysis, consider:
+
+   a) Missing Values:
+      - Review patterns in missing data
+      - Decide on imputation strategy
+
+   b) Outliers:
+      - 9,727 total outliers detected
+      - Review if they are valid data points
+
+   c) Data Quality:
+      - 10 duplicate rows found
+      - Check for data entry errors
+
+   d) Next Steps:
+      - Make informed cleaning decisions
+      - Document all transformations
+      - Validate cleaned data
+
+================================================================================
